@@ -1,0 +1,32 @@
+author: bockyanggoh
+name: Semgrep Code Scan
+description: Semgrep code scanning action for GitHub Actions
+inputs:
+  checkout:
+    description: Checkout the repository before running Semgrep
+    required: false
+    default: "true"
+  path:
+    description: Path to the directory or file to scan
+    required: false
+    default: "."
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      if: ${{ inputs.checkout == 'true' }}
+      uses: actions/checkout@v4
+    - name: Install
+      run: python3 -m pip install semgrep
+      shell: bash
+    - name: Scan
+      run: semgrep scan --junit-xml --path ${{ inputs.path }}
+      shell: bash
+    - name: Test Report
+      if: success() || failure()
+      uses: dorny/test-reporter@v2
+      with:
+        name: Semgrep Report
+        path: ${{ inputs.path }}
+        reporter: java-junit
+        badge-title: semgrep-scan
