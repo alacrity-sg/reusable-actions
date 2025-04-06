@@ -1,0 +1,27 @@
+name: ActionLint Composite Action
+description: Runs ActionLint to validate workflows
+inputs:
+  version:
+    description: Version of actionlint to install
+    required: false
+    default: "1.7.7"
+
+runs:
+  using: composite
+  steps:
+    - name: Download ActionLint
+      shell: bash
+      env:
+        ACTIONLINT_VERSION: ${{ inputs.version }}
+      run: |
+        archive_name="actionlint.tar.gz"
+        curl -Lo ${archive_name} \
+          "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+        tar -xzf ${archive_name}
+    - name: Install Shellcheck
+      shell: bash
+      run: sudo apt-get install -y shellcheck
+    - name: Run ActionLint
+      shell: bash
+      run: |
+        ./actionlint -verbose
